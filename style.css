@@ -58,6 +58,19 @@ body {
     font-weight: 600;
 }
 
+.sample-image-placeholder {
+    border: 2px dashed #ced4da;
+    padding: 1rem;
+    text-align: center;
+    background-color: #ffffff;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .375rem;
+    min-height: 250px;
+}
+
 /* Bootstrap Overrides & Custom Buttons */
 .btn-primary {
     background-color: var(--primary-accent);

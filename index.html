@@ -21,53 +21,75 @@
     <!-- Hero Section -->
     <header class="hero-section">
         <div class="container">
-            <h1 class="display-4">Nova Launcher<br>Backup Viewer<br>(非公式ツール)</h1>
-            <p class="lead">お使いのNova Launcherバックアップファイルを解析し、ホーム画面の構成を分かりやすく表示します。</p>
-            <p class="lead">解析結果は、HTMLまたはCSV形式でダウンロードできます。</p>
+            <h1 class="display-4">Nova Launcher <br class="d-md-none">Backup Viewer<br>(非公式ツール)</h1>
+            
         </div>
     </header>
 
+    <!-- What it does Section -->
+    <section id="what-it-does" class="section">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">このツールでできること</h2>
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-7">
+                    <div class="sample-image-placeholder">
+                        <img src="image.png" alt="Nova Launcherバックアップ解析結果のサンプル画像" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <p>Androidアプリ Nova Launcherのバックアップファイルを解析し、フォルダやアプリがどこに配置されているか（デスクトップ、ドック、他のフォルダの中など）を一覧で分かりやすく表示します。</p>
+                    <p class="mb-0">解析結果は、HTMLまたはCSV形式でダウンロードできます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Information Section -->
     <section id="information" class="section bg-light">
-        <div class="container">
-            <div class="row gy-4">
-                <div class="col-12">
-                    <div class="info-card">
-                        <h5>使い方 (How to use)</h5>
-                        <ol>
-                            <li>下の「ファイルアップロード」エリアにあるボタンを押し、<code>.novabackup</code> ファイルを選択します。</li>
-                            <li>ファイルが自動的に解析され、画面にフォルダとアプリの一覧が表示されます。</li>
-                            <li>結果は「HTMLとして保存」または「CSVとして保存」ボタンからダウンロードできます。</li>
-                        </ol>
-                        <p class="mb-0">より詳しい解説やツールの作成経緯については、以下のnote記事をご覧ください。<br>
-                           <a href="https://note.com/mubena_5454" target="_blank" rel="noopener noreferrer">詳細はこちら (note)</a>
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-card h-100">
-                        <h5>プライバシーとセキュリティ</h5>
-                        <p><strong>ファイルはどこにも送信されません:</strong><br>
-                            このツールは、すべての処理をあなたのWebブラウザ内で行います。選択したバックアップファイルが、外部のサーバーにアップロードされたり、第三者に共有されたりすることは一切ありません。</p>
-                        <p class="mb-0"><strong>バックアップファイルの中身:</strong><br>
-                            ファイルにはアプリ配置や設定などのレイアウト情報が含まれますが、パスワード等の機密情報は含まれていないようです。</p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-card h-100">
-                        <h5>免責事項 (Disclaimer)</h5>
-                        <ul>
-                            <li><strong>正確性:</strong> 表示されるデータの完全性や正確性を保証するものではありません。</li>
-                            <li><strong>自己責任:</strong> 本ツールの利用によって生じたいかなる損害についても、作成者は一切の責任を負いません。</li>
-                            <li><strong>非公式ツール:</strong> これはNova Launcher公式とは関係のない、独立した非公式ツールです。</li>
-                            <li><strong>作成経緯:</strong> このツールは、作者のプロンプトに基づき、GoogleのGemini CLIによって生成されました。</li>
-                        </ul>
-                        <hr>
-                        <p class="small mb-0">
-                            <em><strong>English:</strong> This is an unofficial tool created with Gemini CLI. Use at your own risk. The author is not responsible for any damage. Not affiliated with Nova Launcher.</em>
-                        </p>
-                    </div>
-                </div>
+        <div class="container" style="max-width: 800px;">
+            <div class="info-card">
+                <h5>使い方</h5>
+                <p>
+                    このツールは、バックアップファイルをもとに、<strong>アプリやフォルダがどこに所属しているか</strong>を一覧表示します。ホーム画面のアプリを整理したり、他のランチャーへ設定を移したりする際の参考としてご活用ください。
+                </p>
+                <p class="small">
+                    <strong>※注意:</strong> ウィジェットの情報や、アイコンの配置、フォルダ内の並び順などは出力されません。
+                </p>
+                <ol>
+                    <li>まず、お使いの<code>Nova Launcher > 設定 > バックアップと復元 > バックアップ</code> から <code>.novabackup</code> ファイルを作成します。</li>
+                    <li>下の「ファイル解析」エリアにあるボタンを押して、<code>.novabackup</code> ファイルを選択してください。</li>
+                    <li>解析が終わると、画面にフォルダとアプリの一覧が表示されます。また、結果をHTMLやCSV形式で保存できます。</li>
+                </ol>
+                <p class="mb-0">より詳しい解説やツールの作成経緯については、以下をご覧ください。<br>
+                   <a href="https://note.com/mubena_5454" target="_blank" rel="noopener noreferrer">マニュアル (note)</a>
+                </p>
+            </div>
+            <div class="info-card">
+                <h5>プライバシーとセキュリティ</h5>
+                <p><strong>ファイルは外部に送信されません:</strong><br>
+                    このツールは、すべての処理をあなたのWebブラウザ内で行います。選択したバックアップファイルが、外部のサーバーにアップロードされたり、第三者に共有されたりすることは一切ありません。</p>
+                <p class="mb-0"><strong>バックアップファイルの中身:</strong><br>
+                    このツール作成のために解析した限りでは、.novabackup ファイルにはNova Launcherのバージョン、デバイスの機種名、アプリ配置や設定といったレイアウト情報が保存されていますが、パスワードのような個人情報や機密データ、また個人やデバイスを特定するような情報は含まれていません。</p>
+            </div>
+            <div class="info-card">
+                <h5>免責事項</h5>
+                <ul>
+                    <li><strong>非公式ツール:</strong> これはNova Launcher公式とは関係のない、独立した非公式ツールです。</li>
+                    <li><strong>正確性:</strong> 表示されるデータの完全性や正確性を保証するものではありません。</li>
+                    <li><strong>自己責任:</strong> 本ツールの利用によって生じたいかなる損害についても、作成者は一切の責任を負いません。</li>
+                    <li><strong>作成経緯:</strong> このツールは、作者のプロンプトに基づき、GoogleのGemini CLIによって生成されました。</li>
+                    <li><strong>動作確認バージョン:</strong> 本ツールは Nova Launcher v8.0.18 で動作を確認しています。他のバージョンでは正しく動作しない可能性があります。</li>
+                </ul>
+                <hr>
+                <h5>不具合報告について</h5>
+                <p class="small mb-0">
+                    動作がおかしい、エラーが出るといった不具合報告は、<strong><a href="https://github.com/mbnns54/novabackupviewer/issues" target="_blank" rel="noopener noreferrer">GitHubリポジトリのIssuesページ</a></strong>へお願いします。再現手順などを詳しく書いてくれると助かります。<br>
+                    GitHubアカウントをお持ちでない場合は、<strong>ツールの紹介をしているnote記事のコメント欄</strong>にご連絡ください。
+                </p>
+                <hr>
+                <p class="small mb-0">
+                    <em><strong>English:</strong> This is an unofficial tool created with Gemini CLI. Use at your own risk. The author is not responsible for any damage. Not affiliated with Nova Launcher.</em>
+                </p>
             </div>
         </div>
     </section>
@@ -75,9 +97,9 @@
     <!-- Upload & Results Section -->
     <section id="main-content" class="section">
         <div class="container">
-            <h2 class="section-title">ファイルアップロード</h2>
+            <h2 class="section-title">ファイル解析</h2>
             <div class="upload-box">
-                <label for="backupFile" class="form-label">バックアップファイルを選択</label>
+                <label for="backupFile" class="form-label">.novabackup ファイルを選択</label>
                 <input class="form-control form-control-lg" type="file" id="backupFile" accept=".novabackup">
             </div>
 
@@ -102,8 +124,8 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Created with Gemini CLI</p>
-    </footer>
+    <p>A project by <a href="https://github.com/mbnns54" target="_blank" rel="noopener noreferrer">mubena_5454</a>, generated with Gemini CLI.</p>
+</footer>
 
     <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
