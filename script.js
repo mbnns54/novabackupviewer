@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 h2 { margin-top: 2em; }
             </style>
         `;
-        const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>Nova Layout Export</title>${styles}</head><body>${resultsContainer.innerHTML}</body></html>`;
-        downloadFile(htmlContent, 'text/html', 'nova-layout.html');
+        const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>Nova List Export</title>${styles}</head><body>${resultsContainer.innerHTML}</body></html>`;
+        downloadFile(htmlContent, 'text/html', 'nova-list.html');
     });
 
     exportCsvBtn.addEventListener('click', () => {
@@ -206,6 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
             csvContent += values.join(',') + '\n';
         });
 
-        downloadFile(csvContent, 'text/csv;charset=utf-8;', 'nova-layout.csv');
+        downloadFile(csvContent, 'text/csv;charset=utf-8;', 'nova-list.csv');
     });
 });

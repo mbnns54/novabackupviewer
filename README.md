@@ -39,7 +39,7 @@
 
 動作がおかしい、エラーが出るといった不具合報告は、[GitHubリポジトリのIssuesページ](https://github.com/mbnns54/novabackupviewer/issues)へお願いします。
 
-GitHubアカウントをお持ちでない場合は、[note記事のコメント欄](https://note.com/mubena_5454)にご連絡ください。
+GitHubアカウントをお持ちでない場合は、[note記事のコメント欄](https://note.com/mubena_5454/n/n47c62a062ea3)にご連絡ください。
 
 ## 免責事項
 
