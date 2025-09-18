@@ -112,3 +112,18 @@ body {
     font-weight: 500;
     margin-bottom: 1rem;
 }
+
+/* Table header sorting indicators */
+th .sort-indicator {
+    color: #ccc; /* Default, faint color */
+    float: right;
+}
+th[data-order='asc'] .sort-indicator,
+th[data-order='desc'] .sort-indicator {
+    color: #333; /* Active color */
+}
+
+/* Ensure sortable headers have pointer cursor */
+table.table-sortable th {
+    cursor: pointer;
+}

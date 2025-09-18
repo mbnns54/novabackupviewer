@@ -46,36 +46,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function addSortableEventListeners(table) {
+        table.querySelectorAll('thead th').forEach(headerCell => {
+            headerCell.addEventListener('click', () => {
+                const tableElement = headerCell.closest('table');
+                const headerIndex = Array.from(headerCell.parentElement.children).indexOf(headerCell);
+                const currentIsAscending = headerCell.dataset.order === 'asc';
+
+                // Reset other headers' indicators and order
+                tableElement.querySelectorAll('thead th').forEach(th => {
+                    th.dataset.order = 'asc'; // Reset order
+                    th.querySelector('.sort-indicator').textContent = '';
+                });
+
+                // Set current header's order and indicator
+                headerCell.dataset.order = currentIsAscending ? 'desc' : 'asc';
+                headerCell.querySelector('.sort-indicator').textContent = currentIsAscending ? ' ▼' : ' ▲';
+
+                const rows = Array.from(tableElement.querySelectorAll('tbody tr'));
+
+                rows.sort((a, b) => {
+                    const aText = a.children[headerIndex].textContent.trim();
+                    const bText = b.children[headerIndex].textContent.trim();
+
+                    if (currentIsAscending) {
+                        return aText.localeCompare(bText, undefined, {numeric: true});
+                    } else {
+                        return bText.localeCompare(aText, undefined, {numeric: true});
+                    }
+                });
+
+                const tbody = tableElement.querySelector('tbody');
+                rows.forEach(row => tbody.appendChild(row)); // Re-append sorted rows
+            });
+        });
+    }
+
     function displayProcessedFavorites(db) {
         const favoritesQuery = `SELECT _id, title, itemType, container FROM favorites;`;
-        const drawerQuery = `SELECT _id, title FROM drawer_groups WHERE title IS NOT NULL AND title != '';`;
-        
+        const drawerQuery = `SELECT _id, title, groupType FROM drawer_groups WHERE title IS NOT NULL AND title != '';`;
+        const appGroupsQuery = `SELECT groupId, component FROM appgroups;`;
+
         try {
-            const folderMap = {};
-
-            const drawerResults = db.exec(drawerQuery);
-            if (drawerResults && drawerResults.length > 0) {
-                const drawerGroups = drawerResults[0].values;
-                const columns = drawerResults[0].columns;
-                drawerGroups.forEach(group => {
-                    const groupId = group[columns.indexOf('_id')];
-                    const groupTitle = group[columns.indexOf('title')];
-                    const specialContainerId = -200 - groupId;
-                    folderMap[String(specialContainerId)] = groupTitle;
-                });
-            }
-
+            // 1. Get all necessary data from DB
             const favResults = db.exec(favoritesQuery);
+            const drawerResults = db.exec(drawerQuery);
+            const appGroupsResults = db.exec(appGroupsQuery);
+
             const allItems = favResults[0].values.map(row => {
-                const obj = {};
-                favResults[0].columns.forEach((col, i) => { obj[col] = row[i]; });
-                return obj;
+                const obj = {}; favResults[0].columns.forEach((col, i) => { obj[col] = row[i]; }); return obj;
+            });
+            const drawerGroupsRaw = drawerResults[0].values.map(row => {
+                const obj = {}; drawerResults[0].columns.forEach((col, i) => { obj[col] = row[i]; }); return obj;
+            });
+            const appGroupsRaw = appGroupsResults[0].values.map(row => {
+                const obj = {}; appGroupsResults[0].columns.forEach((col, i) => { obj[col] = row[i]; }); return obj;
             });
 
+            // 2. Create lookup maps
+            const groupIdToTitle = {};
+            drawerGroupsRaw.forEach(g => { groupIdToTitle[g._id] = g.title; });
+
+            const folderIdToParentTabId = {};
+            const folderIdPattern = /com\.teslacoilsw\.launcher\/FOLDER:-(\d+)#.*/;
+            appGroupsRaw.forEach(ag => {
+                const match = ag.component.match(folderIdPattern);
+                if (match) {
+                    const folderContainerId = parseInt(match[1], 10);
+                    const folderId = folderContainerId - 200;
+                    folderIdToParentTabId[folderId] = ag.groupId; // ag.groupId is the parent tab's ID
+                }
+            });
+
+            const folderMap = {};
+            drawerGroupsRaw.forEach(group => {
+                const specialContainerId = -200 - group._id;
+                folderMap[String(specialContainerId)] = group.title;
+            });
             allItems.filter(item => item.itemType === 2).forEach(folder => {
-                folderMap[String(folder._id)] = folder.title || '(無名のフォルダ)';
+                folderMap[String(folder._id)] = folder.title || `(無名のフォルダ) (ID: ${folder._id})`;
             });
 
+            // 3. Process and build final lists
             const getAffiliation = (containerId) => {
                 if (containerId === -100) return 'デスクトップ';
                 if (containerId === -101) return 'ドック';
@@ -86,29 +138,71 @@ document.addEventListener('DOMContentLoaded', () => {
             apps = [];
             folders = [];
 
-            allItems.filter(item => [0, 1, 6].includes(item.itemType) && item.title).forEach(item => {
-                apps.push({ name: item.title, affiliation: getAffiliation(item.container) });
+            // Process desktop/dock items
+            allItems.forEach(item => {
+                if ([0, 1, 6].includes(item.itemType) && item.title) {
+                    apps.push({ name: item.title, affiliation: getAffiliation(item.container) });
+                } else if (item.itemType === 2) {
+                    folders.push({ name: folderMap[String(item._id)], affiliation: getAffiliation(item.container) });
+                }
             });
 
-            allItems.filter(item => item.itemType === 2).forEach(item => {
-                 folders.push({ name: item.title || '(無名のフォルダ)', affiliation: getAffiliation(item.container) });
+            // Process drawer groups
+            drawerGroupsRaw.forEach(group => {
+                let affiliation;
+                if (group.groupType === 'TAB_APP_GROUP') {
+                    affiliation = 'アプリドロワー（タブ）';
+                } else if (group.groupType === 'FOLDER_APP_GROUP') {
+                    const parentTabId = folderIdToParentTabId[group._id];
+                    if (parentTabId) {
+                        const parentTabTitle = groupIdToTitle[parentTabId];
+                        affiliation = `アプリドロワー（タブ：${parentTabTitle}）`;
+                    } else {
+                        affiliation = 'アプリドロワー';
+                    }
+                }
+                if (affiliation) { // Only add drawer groups to the folder list
+                    folders.push({ name: group.title, affiliation: affiliation });
+                }
             });
-            if (drawerResults && drawerResults.length > 0) {
-                 drawerResults[0].values.forEach(row => {
-                    folders.push({ name: row[drawerResults[0].columns.indexOf('title')], affiliation: 'アプリドロワー' });
-                });
-            }
 
+            // 4. Sort and render
             apps.sort((a, b) => a.name.localeCompare(b.name));
-            folders.sort((a, b) => a.name.localeCompare(b.name));
+            // Sort folders by a custom order, then by name
+            folders.sort((a, b) => {
+                const getOrder = (affiliation) => {
+                    if (affiliation === 'デスクトップ') return 0;
+                    if (affiliation === 'ドック') return 1;
+                    if (affiliation === 'アプリドロワー（タブ）') return 2;
+                    if (affiliation.startsWith('アプリドロワー（タブ：')) return 3;
+                    if (affiliation === 'アプリドロワー') return 4;
+                    return 5; // Other/nested folders
+                };
+
+                const orderA = getOrder(a.affiliation);
+                const orderB = getOrder(b.affiliation);
+
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+                // If order is the same, sort by affiliation string then by name
+                const affiliationCompare = a.affiliation.localeCompare(b.affiliation);
+                if (affiliationCompare !== 0) return affiliationCompare;
+                return a.name.localeCompare(b.name);
+            });
 
             resultsContainer.innerHTML = '';
 
             if (folders.length > 0) {
-                resultsContainer.appendChild(createSection('フォルダ一覧', ['フォルダ名', '所属'], folders));
+                resultsContainer.appendChild(createSection('フォルダ一覧', ['フォルダ名', '所属'], folders, false));
             }
             if (apps.length > 0) {
-                resultsContainer.appendChild(createSection('アプリ・ショートカット一覧', ['名前', '所属'], apps));
+                const appSection = createSection('アプリ・ショートカット一覧', ['名前', '所属'], apps, true);
+                const note = document.createElement('p');
+                note.className = 'small text-muted';
+                note.textContent = '※所属が複数の場合、アプリ名は重複して表示されます。ヘッダーをクリックすると「名前」「所属」で並べ替えできます。';
+                appSection.insertBefore(note, appSection.querySelector('table'));
+                resultsContainer.appendChild(appSection);
             }
 
             if (apps.length > 0 || folders.length > 0) {
@@ -121,24 +215,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function createSection(title, headers, data) {
+    function createSection(title, headers, data, isSortable = false) {
         const fragment = document.createDocumentFragment();
         const header = document.createElement('h2');
         header.className = 'mt-5';
         header.textContent = title;
         fragment.appendChild(header);
-        fragment.appendChild(createSimpleTable(headers, data));
+        const table = createSimpleTable(headers, data, isSortable);
+        fragment.appendChild(table);
+
+        if (isSortable) {
+            addSortableEventListeners(table);
+        }
+
         return fragment;
     }
 
-    function createSimpleTable(headers, data) {
+    function createSimpleTable(headers, data, isSortable = false) {
         const table = document.createElement('table');
         table.className = 'table table-striped table-hover';
+        if (isSortable) {
+            table.classList.add('table-sortable');
+        }
+
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        headers.forEach(h => {
+        headers.forEach((h, i) => {
             const th = document.createElement('th');
             th.textContent = h;
+            if (isSortable) {
+                th.dataset.column = i;
+                th.dataset.order = 'asc';
+                th.style.cursor = 'pointer';
+                th.innerHTML += ' <span class="sort-indicator">↕</span>';
+            }
             headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -178,11 +288,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 body { font-family: sans-serif; margin: 2em; }
                 table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
+                th { background-color: #f2f2f2; cursor: pointer; }
                 h2 { margin-top: 2em; }
+                th .sort-indicator { color: #ccc; float: right; }
+                th[data-order='asc'] .sort-indicator, th[data-order='desc'] .sort-indicator { color: #333; }
             </style>
         `;
-        const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>Nova List Export</title>${styles}</head><body>${resultsContainer.innerHTML}</body></html>`;
+
+        const interactiveScript = `
+            <script>
+                ${addSortableEventListeners.toString()}
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.querySelectorAll('.table-sortable').forEach(table => {
+                        addSortableEventListeners(table);
+                    });
+                });
+            </script>
+        `;
+
+        const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>Nova List Export</title>${styles}</head><body>${resultsContainer.innerHTML}${interactiveScript}</body></html>`;
         downloadFile(htmlContent, 'text/html', 'nova-list.html');
     });
 
